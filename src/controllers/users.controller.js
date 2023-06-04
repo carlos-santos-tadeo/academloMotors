@@ -23,7 +23,7 @@ exports.updateUser = async (req, res) => {
     // 1. TRAERNOS EL USUARIO QUE VAMOS A ACTUALIZAR
     const { id } = req.params;
     // 2. NOS TRAEMOS DE EL BODY LA INFORMACION QUE VAMOS A ACTUALIZAR
-    const {name, email} = req.body;
+    const { name, email } = req.body;
     // 3. BUSCAMOS EL USUARIO QUE VAMOS A ACTUALIZAR
     const user = await User.findOne({
       where: {
@@ -57,18 +57,34 @@ exports.updateUser = async (req, res) => {
 exports.createUser = async (req, res) => {
   try {
     // PASO 1: OBTENER INFORMACION A CREAR DE LA REQ.BODY
-    const { name, email, password, role, status } =
-      req.body;
+    const { id, name, email, password, role, status } = req.body;
+
+    const users = await User.findAll({
+      
+    });
+
+    for(let x = 0;x<users.length;x++){
+      if (email === users[x].email) {
+        return res.status(404).json({
+          status: "error",
+          message: `User with id: ${id} and email: ${email} already exists `,
+        });
+      }
+    }
+
+
 
     //PASO 2: CREAR EL USUARIO UTILIZANDO EL MODELO
 
     const user = await User.create({
+      
       name,
-      email, 
-      password, 
-      role, 
+      email,
+      password,
+      role,
       status,
     });
+
 
     // PASO 3: ENVIAR UNA RESPUESTA AL CLIENTE
 
