@@ -67,7 +67,7 @@ exports.createUser = async (req, res) => {
       if (email === users[x].email) {
         return res.status(404).json({
           status: "error",
-          message: `User with id: ${id} and email: ${email} already exists `,
+          message: `User with email: ${email} already exists `,
         });
       }
     }

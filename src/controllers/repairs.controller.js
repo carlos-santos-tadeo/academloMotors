@@ -125,6 +125,7 @@ exports.deleteRepair = async (req, res) => {
     //! traernos el id de los parametros
     const { id } = req.params;
 
+    //! busco en la bd y verifico si es pending
     const repair = await Repair.findOne({
       where: {
         status: "pending",
