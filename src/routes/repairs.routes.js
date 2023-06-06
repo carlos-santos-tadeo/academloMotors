@@ -1,17 +1,17 @@
-const express = require("express");
+const express = require('express');
 
-const repairsController = require("./../controllers/repairs.controller");
+const repairsController = require('./../controllers/repairs.controller');
 
 const router = express.Router();
 
 //Rutas que no requieren id
 router
-  .route("/")
+  .route('/')
   .get(repairsController.findRepairs)
   .post(repairsController.createRepair);
 //Rutas que necesitan de un id
 router
-  .route("/:id")
+  .route('/:id')
   .get(repairsController.findRepair)
   .patch(repairsController.updateRepair)
   .delete(repairsController.deleteRepair);

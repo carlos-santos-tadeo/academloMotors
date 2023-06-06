@@ -1,9 +1,8 @@
-const express = require("express");
+const express = require('express');
 
 //routes
-const usersRouter = require("./routes/users.routes");
-const repairsRouter = require("./routes/repairs.routes");
-
+const usersRouter = require('./routes/users.routes');
+const repairsRouter = require('./routes/repairs.routes');
 
 const app = express();
 //este middleware de aca me sirve para que mi servidor
@@ -17,9 +16,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/api/v1/users", usersRouter);
-app.use("/api/v1/repairs", repairsRouter)
-
-
+app.use('/api/v1/users', usersRouter);
+app.use('/api/v1/repairs', repairsRouter);
 
 module.exports = app;
