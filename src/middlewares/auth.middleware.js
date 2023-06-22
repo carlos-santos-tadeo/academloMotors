@@ -66,7 +66,7 @@ exports.protectAccountOwner = catchAsync(async (req, res, next) => {
   const { sessionUser } = req;
 
   // console.log(sessionUser.id)
-  
+  //verifico si el usuario en sesion es employee
   const oneUser = await Users.findAll({
     where: {
       role: 'employee',
