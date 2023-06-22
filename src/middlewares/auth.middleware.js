@@ -67,14 +67,16 @@ exports.protectAccountOwner = catchAsync(async (req, res, next) => {
 
   // console.log(sessionUser.id)
   
-  const oneUser = await Users.findOne({
+  const oneUser = await Users.findAll({
     where: {
       role: 'employee',
-      status: 'available',
     },
   });
-  if (oneUser.id !== sessionUser.id) {
-    return next(new AppError('You do not own this account.', 401));
+  
+  for(let i; i<oneUser.length; i++){
+    if (oneUser.id !== sessionUser.id) {
+      return next(new AppError('You do not own this account.', 401));
+    }
   }
 
   next();
