@@ -1,154 +1,90 @@
-const Repair = require('../models/repair.model');
+const Repair = require('../models/repairs.model');
+const catchAsync = require('../utils/catchAsync');
 
-exports.findRepairs = async (req, res) => {
-  const time = req.requestTime;
-
+//obtenemos las reparaciones
+exports.findRepairs = catchAsync(async (req, res, next) => {
+  //validamos que su estatus sea pendiente a reparar
   const repairs = await Repair.findAll({
+    where: { status: 'pending' },
+    attributes: {
+      exclude: ['status'],
+    },
+  });
+
+  res.json({
+    status: 'success',
+    results: repairs.length,
+    repairs,
+  });
+});
+
+//creamos una nueva reparacion
+exports.createRepair = catchAsync(async (req, res, next) => {
+  //traemos informacion del req.body
+  const { date, motorsNumber, description } = req.body;
+  const { id } = req.sessionUser;
+
+  //se crea utilizando el modelo
+  const repair = await Repair.create({
+    date,
+    motorsNumber: motorsNumber.toLowerCase(),
+    description,
+    userId: id,
+  });
+
+  //enviamos la respuesta
+  res.status(201).json({
+    message: 'The repair has been created',
+    repair,
+  });
+});
+
+exports.findRepair = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+
+  const oneRepair = await Repair.findOne({
     where: {
+      id,
       status: 'pending',
     },
   });
 
-  return res.json({
-    requestTime: time,
-    results: repairs.length,
+  //validar si repairs existe, si no enviar error 404
+  if (!oneRepair) {
+    return res.status(404).json({
+      status: 'error',
+      message: `The repair with id: ${id} not found!`,
+    });
+  }
+
+  return res.status(200).json({
     status: 'success',
-    message: 'Repairs found',
-    repairs,
+    message: 'repair found',
+    oneRepair,
   });
-};
+});
 
-exports.updateRepair = async (req, res) => {
-  try {
-    // 1. TRAERNOS LO QUE VAMOS A ACTUALIZAR
-    const { id } = req.params;
-    // 2. NOS TRAEMOS DE EL BODY LA INFORMACION QUE VAMOS A ACTUALIZAR
-    const { status } = req.body;
-    // 3. BUSCAMOS QUE EL STATUS SEA PENDING
-    const repair = await Repair.findOne({
-      where: {
-        id,
-        status: 'pending',
-      },
-    });
+exports.updateRepair = catchAsync(async (req, res, next) => {
+  const { repair } = req;
 
-    if (!repair) {
-      return res.status(404).json({
-        status: 'error',
-        message: `Repair with id: ${id} not found`,
-      });
-    }
-    // 5. PROCEDO A ACTUALIZARLO
-    await repair.update({ status });
+  const updatedRepair = await repair.update({ status: 'completed' });
 
-    // 6. ENVIO LA CONFIRMACIÓN DE EXITO
-    res.status(200).json({
-      status: 'success',
-      message: 'The repair has been updated',
-    });
-  } catch (error) {
-    return res.status(500).json({
-      status: 'fail',
-      message: 'Something went very wrong!',
-    });
-  }
-};
+  res.status(200).json({
+    status: 'success',
+    message: 'Repair updated',
+    repair: updatedRepair,
+  });
+});
 
-exports.createRepair = async (req, res) => {
-  try {
-    // PASO 1: OBTENER INFORMACION A CREAR DE LA REQ.BODY
-    const { date, userId } = req.body;
+exports.deleteRepair = catchAsync(async (req, res, next) => {
+  const { repair } = req;
 
-    //PASO 2: CREAR EL REPAIRS UTILIZANDO EL MODELO
+  //actualizamos el status
+  await repair.update({ status: 'cancelled' });
 
-    const repair = await Repair.create({
-      date,
-      userId,
-    });
-
-    // PASO 3: ENVIAR UNA RESPUESTA AL CLIENTE
-
-    return res.status(201).json({
-      message: 'The repair has been created!',
-      repair,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      status: 'fail',
-      message: 'Something went very wrong!',
-    });
-  }
-};
-
-exports.findRepair = async (req, res) => {
-  try {
-    //? 1. NOS TRAEMOS EL ID DE LOS PARAMETROS
-    const { id } = req.params; //DESTRUCION DE OBJETOS
-
-    //? 2. BUSCO EL REPAIRS EN LA BASE DE DATOS
-    const repair = await Repair.findOne({
-      where: {
-        // id: id
-        id,
-        status: 'pending',
-      },
-    });
-
-    //? 3. VALIDAR SI EL REPAIRS EXISTE, SI NO, ENVIAR UN ERROR 404
-    if (!repair) {
-      return res.status(404).json({
-        status: 'error',
-        message: `The repair with id: ${id} not found!`,
-      });
-    }
-
-    //? 4. ENVIAR LA RESPUESTA AL CLIENTE
-    return res.status(200).json({
-      status: 'success',
-      message: 'Repair found',
-      repair,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      status: 'fail',
-      message: 'Something went very wrong!',
-    });
-  }
-};
-
-exports.deleteRepair = async (req, res) => {
-  try {
-    //! traernos el id de los parametros
-    const { id } = req.params;
-
-    //! busco en la bd y verifico si es pending
-    const repair = await Repair.findOne({
-      where: {
-        status: 'pending',
-        id,
-      },
-    });
-    //! validar si existe
-    if (!repair) {
-      return res.status(404).json({
-        status: 'error',
-        message: `Repair with id: ${id} not found!`,
-      });
-    }
-    //! actualizar el status encontrado y actualizar  a unavailable
-    await repair.update({ status: 'cancelled' }); //eliminacion logica
-    //await user.destroy() //eliminacion fisica
-    //! enviar respuesta
-    return res.status(200).json({
-      status: 'success',
-      message: 'the repair has been deleted!',
-    });
-  } catch (error) {
-    return res.status(500).json({
-      status: 'fail',
-      message: 'Something went very wrong!',
-    });
-  }
-};
+  //procedo a enviar la informacion con exito
+  res.status(200).json({
+    status: 'success',
+    message: `The repair with id:${repair.id} has been deleted`,
+  });
+});

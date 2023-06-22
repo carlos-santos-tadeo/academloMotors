@@ -1,19 +1,29 @@
 const express = require('express');
 
-const repairsController = require('./../controllers/repairs.controller');
+//controllers
+const repairsController = require('../controllers/repairs.controller');
+
+// middlewares
+const authMiddleware = require('../middlewares/auth.middleware');
+const repairMiddleware = require('../middlewares/repair.middleware');
+const validationMiddleware = require('../middlewares/validations.middleware');
 
 const router = express.Router();
 
-//Rutas que no requieren id
+
+// routes
 router
   .route('/')
-  .get(repairsController.findRepairs)
-  .post(repairsController.createRepair);
-//Rutas que necesitan de un id
+  .get(authMiddleware.protect, authMiddleware.restrictTo('employee'), repairsController.findRepairs)
+  .post(validationMiddleware.createRepairValidation, authMiddleware.protect, repairsController.createRepair);
+
 router
+  .use(authMiddleware.protect)
+  .use(authMiddleware.restrictTo('employee'))
+  .use('/:id', repairMiddleware.validRepair)
   .route('/:id')
   .get(repairsController.findRepair)
-  .patch(repairsController.updateRepair)
-  .delete(repairsController.deleteRepair);
+  .patch(authMiddleware.protectAccountOwner, repairsController.updateRepair)
+  .delete(authMiddleware.protectAccountOwner, repairsController.deleteRepair);
 
 module.exports = router;
