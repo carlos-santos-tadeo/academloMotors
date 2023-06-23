@@ -127,8 +127,8 @@ exports.updateUser = catchAsync(async (req, res, next) => {
   //traemos info del req.body
   const { name, email } = req.body;
 
-  console.log(user.id);
-  console.log(sessionUser.id);
+  // console.log(user.id);
+  // console.log(sessionUser.id);
 
   if (user.id === sessionUser.id) {
     await user.update({ name, email });
@@ -139,22 +139,28 @@ exports.updateUser = catchAsync(async (req, res, next) => {
     });
   }
 
-  res.status(200).json({
+  res.status(403).json({
     status: 'error',
     message: `This account does not belong to you`,
   });
-
-
 });
 
 //eliminamos usuario
 exports.deleteUser = catchAsync(async (req, res, next) => {
-  const { user } = req;
+  const { user, sessionUser } = req;
 
-  await user.update({ status: 'disabled' });
+  if (user.id === sessionUser.id) {
 
-  res.status(200).json({
-    status: 'success',
-    message: `User with id:${user.id} been deleted`,
+    await user.update({ status: 'disabled' });
+
+    return res.status(200).json({
+      status: 'success',
+      message: `User with id:${user.id} been deleted`,
+    });
+  }
+
+  res.status(403).json({
+    status: 'error',
+    message: `This account does not belong to you`,
   });
 });
