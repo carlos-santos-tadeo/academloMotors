@@ -141,7 +141,7 @@ exports.updateUser = catchAsync(async (req, res, next) => {
 
   res.status(403).json({
     status: 'error',
-    message: `This account does not belong to you`,
+    message: `You do not own this account`,
   });
 });
 
@@ -161,6 +161,6 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
 
   res.status(403).json({
     status: 'error',
-    message: `This account does not belong to you`,
+    message: `You do not own this account`,
   });
 });
