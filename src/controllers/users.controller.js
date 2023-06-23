@@ -123,16 +123,28 @@ exports.findOneUser = catchAsync(async (req, res, next) => {
 
 //actualizamos usuario
 exports.updateUser = catchAsync(async (req, res, next) => {
-  const { user } = req;
+  const { user, sessionUser } = req;
   //traemos info del req.body
   const { name, email } = req.body;
 
-  await user.update({ name, email });
+  console.log(user.id);
+  console.log(sessionUser.id);
+
+  if (user.id === sessionUser.id) {
+    await user.update({ name, email });
+
+    return res.status(200).json({
+      status: 'success',
+      message: `The user with id:${user.id} updated`,
+    });
+  }
 
   res.status(200).json({
-    status: 'success',
-    message: `The user with id:${user.id} updated`,
+    status: 'error',
+    message: `This account does not belong to you`,
   });
+
+
 });
 
 //eliminamos usuario
