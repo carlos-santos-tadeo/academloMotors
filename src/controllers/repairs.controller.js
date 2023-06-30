@@ -1,5 +1,7 @@
 const Repair = require('../models/repairs.model');
 const catchAsync = require('../utils/catchAsync');
+const Users = require('../models/users.model');
+
 
 //obtenemos las reparaciones
 exports.findRepairs = catchAsync(async (req, res, next) => {
