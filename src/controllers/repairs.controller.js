@@ -3,15 +3,19 @@ const catchAsync = require('../utils/catchAsync');
 
 //obtenemos las reparaciones
 exports.findRepairs = catchAsync(async (req, res, next) => {
-  //validamos que su estatus sea pendiente a reparar
   const repairs = await Repair.findAll({
-    where: { status: 'pending' },
+    where: { status: ['pending', 'completed'] },
     attributes: {
       exclude: ['status'],
     },
+    include: [
+      {
+        model: Users,
+      },
+    ],
   });
 
-  res.json({
+  res.status(200).json({
     status: 'success',
     results: repairs.length,
     repairs,
